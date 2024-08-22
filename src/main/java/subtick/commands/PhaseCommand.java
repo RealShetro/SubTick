@@ -13,7 +13,7 @@ import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static com.mojang.brigadier.arguments.StringArgumentType.word;
 
-import subtick.TickHandler;
+import subtick.ITickHandler;
 import subtick.TickPhase;
 
 public class PhaseCommand
@@ -23,32 +23,16 @@ public class PhaseCommand
     dispatcher.register(
       literal("phaseStep")
       .then(argument("count", integer(1))
-        .executes((c) -> stepCount(c.getSource(), getInteger(c, "count")))
+        .executes((c) -> ITickHandler.get(c).phaseStep(c.getSource(), getInteger(c, "count")))
       )
       .then(argument("phase", word())
         .suggests((c, b) -> suggest(TickPhase.commandSuggestions, b))
         .then(literal("force")
-          .executes((c) -> stepToPhase(c.getSource(), TickPhase.byCommandKey(getString(c, "phase")), true))
+          .executes((c) -> ITickHandler.get(c).stepToPhase(c.getSource(), TickPhase.byCommandKey(getString(c, "phase")), true))
         )
-        .executes((c) -> stepToPhase(c.getSource(), TickPhase.byCommandKey(getString(c, "phase")), false))
+        .executes((c) -> ITickHandler.get(c).stepToPhase(c.getSource(), TickPhase.byCommandKey(getString(c, "phase")), false))
       )
-      .executes((c) -> stepCount(c.getSource(), 1))
+      .executes((c) -> ITickHandler.get(c).phaseStep(c.getSource(), 1))
     );
-  }
-
-  private static int stepCount(CommandSourceStack c, int count)
-  {
-    int currentPhase = TickHandler.currentPhase().phase();
-    int phase = currentPhase + count;
-    int ticks = phase/TickPhase.totalPhases;
-    return TickCommand.step(c, phase < currentPhase ? ticks + 1 : ticks, phase % TickPhase.totalPhases);
-  }
-
-  private static int stepToPhase(CommandSourceStack c, int phase, boolean force)
-  {
-    if(phase < TickHandler.currentPhase().phase() && force)
-      return TickCommand.step(c, 1, phase);
-    else
-      return TickCommand.step(c, 0, phase);
   }
 }

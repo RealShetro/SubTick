@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -23,16 +24,27 @@ import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.storage.DerivedLevelData;
 import net.minecraft.world.level.storage.ServerLevelData;
 
+import subtick.ITickHandleable;
+import subtick.TickHandler;
 import subtick.TickPhase;
 
 @Mixin(MinecraftServer.class)
-public class MinecraftServerMixin
+public class MinecraftServerMixin implements ITickHandleable
 {
+  @Unique private TickHandler tickHandler;
+
+  @Override
+  public TickHandler tickHandler()
+  {
+    return tickHandler;
+  }
+
   @Inject(method = "createLevels", at = @At(value = "INVOKE", target = "Ljava/util/Map;put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", ordinal = 0), locals = LocalCapture.CAPTURE_FAILHARD)
   private void onOverworldAdded(ChunkProgressListener chunkProgressListener, CallbackInfo ci,
     ServerLevelData serverLevelData, WorldGenSettings worldGenSettings, boolean bl, long l, long m, List<?> list,
     Registry<?> registry, ChunkGenerator chunkGenerator, LevelStem levelStem, Holder<?> holder, ServerLevel serverLevel)
   {
+    tickHandler = new TickHandler();
     TickPhase.addDimension(serverLevel);
   }
 

@@ -33,8 +33,12 @@
 
   "subtick.feedback.tickCommand.when.frozen":   "Server frozen at {dim} {phase} phase",
   "subtick.feedback.tickCommand.when.unfrozen": "Server unfrozen at {dim} {phase} phase",
+  "subtick.feedback.tickCommand.when.freezing": "Server freezing at {dim} {phase} phase",
+  "subtick.feedback.tickCommand.when.unfreezing": "Server unfreezing at {dim} {phase} phase",
+  "subtick.feedback.tickCommand.when.stepping": "Server stepping at {dim} {phase} phase",
 
   "subtick.feedback.tickCommand.freeze.err": "Cannot freeze; already frozen",
+  "subtick.feedback.tickCommand.freeze.err.unfreezing": "Cannot freeze; already in the middle of unfreezing",
   "subtick.feedback.tickCommand.freeze.success": "Freezing at {dim} {phase} phase",
 
   "subtick.feedback.tickCommand.unfreeze.err": "Cannot unfreeze; already not frozen",

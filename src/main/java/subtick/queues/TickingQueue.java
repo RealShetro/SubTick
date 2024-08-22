@@ -23,7 +23,11 @@ public abstract class TickingQueue
 {
   public static final DynamicCommandExceptionType INVALID_MODE_EXCEPTION = new DynamicCommandExceptionType(key -> new LiteralMessage("Invalid mode '" + key + "'"));
   public static final DynamicCommandExceptionType INVALID_QUEUE_EXCEPTION = new DynamicCommandExceptionType(key -> new LiteralMessage("Invalid queue '" + key + "'"));
+  // Block events can happen multiple times in the same block, but only if no equivalent block event exists in the queue.
+  // To keep track of them, we have 2 queues; Block events get moved to spentQueue after ticking.
   protected final ObjectLinkedOpenHashSet<QueueElement> queue = new ObjectLinkedOpenHashSet<>();
+  protected final ObjectLinkedOpenHashSet<QueueElement> spentQueue = new ObjectLinkedOpenHashSet<>();
+  protected int newQueueElementsCount = 0;
   public boolean exhausted;
 
   protected final int phase;
@@ -115,9 +119,10 @@ public abstract class TickingQueue
     return x*x + y*y + z*z <= range*range;
   }
 
-  public void sendQueues(CommandSourceStack actor, int count)
+  public void sendQueueStep(CommandSourceStack actor, int count)
   {
-    ServerNetworkHandler.sendQueueStep(queue, count, actor.getLevel(), actor);
+    ServerNetworkHandler.sendQueueStep(queue, spentQueue, newQueueElementsCount, count, actor.getLevel(), actor);
+    newQueueElementsCount = 0;
   }
 
   public boolean cantStep()

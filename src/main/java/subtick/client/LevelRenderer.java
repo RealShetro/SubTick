@@ -1,6 +1,7 @@
 package subtick.client;
 
 import java.util.HashSet;
+import java.util.Objects;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -87,22 +88,42 @@ public class LevelRenderer
 
   public static synchronized void addCuboidFaces(double x, double y, double z, double X, double Y, double Z, Color4f color)
   {
-    quads.add(new QuadCuboid(x, y, z, X, Y, Z, color));
+    QuadCuboid o = new QuadCuboid(x, y, z, X, Y, Z, color);
+    if(!quads.add(o))
+    {
+      quads.remove(o);
+      quads.add(o);
+    }
   }
 
   public static synchronized void addCuboidEdges(double x, double y, double z, double X, double Y, double Z, Color4f color)
   {
-    lines.add(new LineCuboid(x, y, z, X, Y, Z, color));
+    LineCuboid o = new LineCuboid(x, y, z, X, Y, Z, color);
+    if(!lines.add(o))
+    {
+      lines.remove(o);
+      lines.add(o);
+    }
   }
 
   public static synchronized void addText(String text, int x, int y, int z, Color4f color)
   {
-    texts.add(new TextBasic(text, x + 0.5, y + 0.5, z + 0.5, color));
+    TextBasic o = new TextBasic(text, x + 0.5, y + 0.5, z + 0.5, color);
+    if(!texts.add(o))
+    {
+      texts.remove(o);
+      texts.add(o);
+    }
   }
 
   public static synchronized void addLabel(int index, int depth, int x, int y, int z, Color4f color1, Color4f color2)
   {
-    texts.add(new DepthLabel(String.valueOf(index), String.valueOf(depth), x + 0.5, y + 0.5, z + 0.5, color1.intValue, color2.intValue));
+    DepthLabel o = new DepthLabel(String.valueOf(index), String.valueOf(depth), x + 0.5, y + 0.5, z + 0.5, color1.intValue, color2.intValue);
+    if(!texts.add(o))
+    {
+      texts.remove(o);
+      texts.add(o);
+    }
   }
 
   private static interface Line
@@ -121,6 +142,18 @@ public class LevelRenderer
 
   private static record LineCuboid(double x, double y, double z, double X, double Y, double Z, Color4f color) implements Line
   {
+    @Override
+    public boolean equals(Object b)
+    {
+      return b instanceof LineCuboid o && o.x == x && o.y == y && o.z == z && o.X == X && o.Y == Y && o.Z == Z;
+    }
+
+    @Override
+    public int hashCode()
+    {
+      return Objects.hash(x, y, z, X, Y, Z);
+    }
+
     public void render(BufferBuilder buffer, double cx, double cy, double cz)
     {
       double x = this.x - cx, y = this.y - cy, z = this.z - cz;
@@ -182,6 +215,18 @@ public class LevelRenderer
 
   private static record QuadCuboid(double x, double y, double z, double X, double Y, double Z, Color4f color) implements Quad
   {
+    @Override
+    public boolean equals(Object b)
+    {
+      return b instanceof QuadCuboid o && o.x == x && o.y == y && o.z == z && o.X == X && o.Y == Y && o.Z == Z;
+    }
+
+    @Override
+    public int hashCode()
+    {
+      return Objects.hash(x, y, z, X, Y, Z);
+    }
+
     public void render(BufferBuilder buffer, double cx, double cy, double cz)
     {
       double x = this.x - cx, y = this.y - cy, z = this.z - cz;
@@ -230,6 +275,18 @@ public class LevelRenderer
   private static record TextBasic(String text, double x, double y, double z, Color4f color) implements Text
   {
     @Override
+    public boolean equals(Object b)
+    {
+      return b instanceof TextBasic o && o.x == x && o.y == y && o.z == z;
+    }
+
+    @Override
+    public int hashCode()
+    {
+      return Objects.hash(x, y, z);
+    }
+
+    @Override
     //#if MC >= 11900
     //$$ public void render(BufferBuilder buffer, PoseStack poseStack, Quaternionf rotation, double cx, double cy, double cz)
     //#else
@@ -254,6 +311,18 @@ public class LevelRenderer
 
   private static record DepthLabel(String index, String depth, double x, double y, double z, int color1, int color2) implements Text
   {
+    @Override
+    public boolean equals(Object b)
+    {
+      return b instanceof DepthLabel o && o.x == x && o.y == y && o.z == z;
+    }
+
+    @Override
+    public int hashCode()
+    {
+      return Objects.hash(x, y, z);
+    }
+
     @Override
     //#if MC >= 11900
     //$$ public void render(BufferBuilder buffer, PoseStack poseStack, Quaternionf rotation, double cx, double cy, double cz)

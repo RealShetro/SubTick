@@ -39,6 +39,8 @@ public class HudRenderer
   private static int STEPPING_TEXT;
   private static Color4f TO_STEP_BG;
   private static int TO_STEP_TEXT;
+  private static Color4f NEW_BG;
+  private static int NEW_TEXT;
 
   private static Pair<Integer, Integer> trimQueue(int max, int maxHighlights)
   {
@@ -134,6 +136,8 @@ public class HudRenderer
       STEPPING_TEXT = Configs.STEPPING_TEXT.getColor().intValue;
       TO_STEP_BG = Configs.TO_STEP_BG.getColor();
       TO_STEP_TEXT = Configs.TO_STEP_TEXT.getColor().intValue;
+      NEW_BG = Configs.NEW_BG.getColor();
+      NEW_TEXT = Configs.NEW_TEXT.getColor().intValue;
 
       TickPhase tickPhase = ClientTickHandler.tickPhase;
 
@@ -171,7 +175,7 @@ public class HudRenderer
         }
         wQueue += 2;
         int wAll = wDimPhase + wQueue + 10;
-        renderHudB(poseStack, queue, tickPhase, ClientTickHandler.queueIndex1 - indices.getLeft(), ClientTickHandler.queueIndex2 - indices.getLeft(), align.getX(wAll + 10) + xOff, align.getY(h*Math.max(TickPhase.totalPhases, indices.getRight() - indices.getLeft())) + yOff, wDim, wPhase, wQueue, h);
+        renderHudB(poseStack, queue, tickPhase, ClientTickHandler.queueIndex1 - indices.getLeft(), ClientTickHandler.queueIndex2 - indices.getLeft(), queue.length - ClientTickHandler.newQueueElementCount, align.getX(wAll + 10) + xOff, align.getY(h*Math.max(TickPhase.totalPhases, indices.getRight() - indices.getLeft())) + yOff, wDim, wPhase, wQueue, h);
       }
     }
   }
@@ -184,7 +188,7 @@ public class HudRenderer
   private static Component text(QueueElement element, int i, boolean depth)
   {
     return depth ?
-      Component.Serializer.fromJsonLenient(String.format("[\"#%d (\", {\"color\":\"%s\",\"text\":\"%d\"}, \"): %s\"]", i, color(i <= ClientTickHandler.queueIndex1 ? Configs.STEPPED_DEPTH : i <= ClientTickHandler.queueIndex2 ? Configs.STEPPING_DEPTH : Configs.TO_STEP_DEPTH), element.depth(), element.label())) :
+      Component.Serializer.fromJsonLenient(String.format("[\"#%d (\", {\"color\":\"%s\",\"text\":\"%d\"}, \"): %s\"]", i, color(i <= ClientTickHandler.queueIndex1 ? Configs.STEPPED_DEPTH : i <= ClientTickHandler.queueIndex2 ? Configs.STEPPING_DEPTH : i >= ClientTickHandler.queue.size() - ClientTickHandler.newQueueElementCount ? Configs.NEW_DEPTH : Configs.TO_STEP_DEPTH), element.depth(), element.label())) :
       //#if MC >= 11900
       //$$ Component.literal(String.format("#%d: %s", i, element.label()));
       //#else
@@ -237,7 +241,7 @@ public class HudRenderer
     //#else
     PoseStack poseStack,
     //#endif
-    Component[] queue, TickPhase phase, int iqueue1, int iqueue2, int x, int y, int wDim, int wPhase, int wQueue, int h)
+    Component[] queue, TickPhase phase, int iqueue1, int iqueue2, int iqueue3, int x, int y, int wDim, int wPhase, int wQueue, int h)
   {
     RenderSystem.setShader(GameRenderer::getPositionColorShader);
     RenderSystem.enableBlend();
@@ -249,7 +253,7 @@ public class HudRenderer
 
     drawTableB(buffer, x, y, h, wDim, ClientTickHandler.dimensions.size(), phase.dim());
     drawTableB(buffer, x+wDim+10, y, h, wPhase, TickPhase.totalPhases, phase.phase());
-    drawTableC(buffer, x+wDim+wPhase+20, y, h, wQueue, queue.length, iqueue1, iqueue2);
+    drawTableC(buffer, x+wDim+wPhase+20, y, h, wQueue, queue.length, iqueue1, iqueue2, iqueue3);
 
     int sx = x + wDim + 10 + wPhase + 1;
     int sy = y + phase.phase() * h + 1;
@@ -280,7 +284,7 @@ public class HudRenderer
       //#if MC >= 12000
       //$$ guiGraphics.drawString(font, queue[i], x, y1, i < iqueue1 ? STEPPED_TEXT : i < iqueue2 ? STEPPING_TEXT : TO_STEP_TEXT, false);
       //#else
-      font.draw(poseStack, queue[i], x, y1, i < iqueue1 ? STEPPED_TEXT : i < iqueue2 ? STEPPING_TEXT : TO_STEP_TEXT);
+      font.draw(poseStack, queue[i], x, y1, i < iqueue1 ? STEPPED_TEXT : i < iqueue2 ? STEPPING_TEXT : i >= iqueue3 ? NEW_TEXT : TO_STEP_TEXT);
       //#endif
   }
 
@@ -330,8 +334,7 @@ public class HudRenderer
     drawRect(buffer, x, y, X, y + 1, Configs.SEPARATOR.getColor());
   }
 
-
-  private static void drawTableC(BufferBuilder buffer, int x, int y, int h, int w, int count, int index1, int index2)
+  private static void drawTableC(BufferBuilder buffer, int x, int y, int h, int w, int count, int index1, int index2, int index3)
   {
     // Left & right borders
     int Y = y + count * h + 1;
@@ -354,7 +357,7 @@ public class HudRenderer
       else
       {
         drawRect(buffer, x, y, X, y += 1, Configs.SEPARATOR.getColor());
-        drawRect(buffer, x, y, X, y += h, i < index1 ? STEPPED_BG : i < index2 ? STEPPING_BG : TO_STEP_BG);
+        drawRect(buffer, x, y, X, y += h, i < index1 ? STEPPED_BG : i < index2 ? STEPPING_BG : i >= index3 ? NEW_BG : TO_STEP_BG);
       }
     }
     drawRect(buffer, x, y, X, y + 1, Configs.SEPARATOR.getColor());

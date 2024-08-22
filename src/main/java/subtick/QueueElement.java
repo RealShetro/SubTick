@@ -3,10 +3,12 @@ package subtick;
 import java.util.Objects;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
+import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.material.Fluid;
 //#if MC >= 11800
 //$$ import net.minecraft.world.ticks.ScheduledTick;
@@ -39,12 +41,20 @@ public record QueueElement(String label, int x, int y, int z, int depth)
     this(label, pos.getX(), pos.getY(), pos.getZ(), depth);
   }
 
+  private static String getLabelForBlockEvent(Block block, int a, int b)
+  {
+    if(block instanceof PistonBaseBlock)
+      return block.getName().getString() + (a == 0 ? " |→ " : " |← ") + Direction.from3DDataValue(b);
+
+    return block.getName().getString();
+  }
+
   public QueueElement(BlockEventData be, int depth)
   {
     //#if MC >= 11800
-    //$$ this(be.block().getName().getString(), be.pos(), depth);
+    //$$ this(getLabelForBlockEvent(be.block(), be.paramA(), be.paramB()), be.pos(), depth);
     //#else
-    this(be.getBlock().getName().getString(), be.getPos(), depth);
+    this(getLabelForBlockEvent(be.getBlock(), be.getParamA(), be.getParamB()), be.getPos(), depth);
     //#endif
   }
 

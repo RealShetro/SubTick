@@ -17,6 +17,7 @@ public class ClientTickHandler
 {
   private static final Minecraft mc = Minecraft.getInstance();
   public static final List<QueueElement> queue = new ArrayList<>();
+  public static int newQueueElementCount = 0;
   public static final List<String> dimensions = new ArrayList<>();
   public static boolean frozen;
   public static TickPhase tickPhase = TickPhase.INVALID;
@@ -73,18 +74,21 @@ public class ClientTickHandler
 
   public static synchronized void setQueue(ListTag tag)
   {
+    int l = queue.size();
     queue.clear();
     tag.forEach((Tag t) ->
     {
       CompoundTag t1 = (CompoundTag)t;
       queue.add(new QueueElement(t1.getString("s"), t1.getInt("x"), t1.getInt("y"), t1.getInt("z"), t1.getInt("d")));
     });
+    newQueueElementCount = Math.max(0, queue.size() - l);
   }
 
   public static synchronized void queueStep(CompoundTag tag)
   {
     setQueue((ListTag)tag.get("queue"));
     int steps = tag.getInt("steps");
+    newQueueElementCount = tag.getInt("newElements");
     queueIndex1 = queueIndex2;
     queueIndex2 += steps;
     // out of bounds protection
@@ -122,21 +126,30 @@ public class ClientTickHandler
       QueueElement element = iter.next();
       LevelRenderer.addCuboidFaces(element.x(), element.y(), element.z(), Configs.STEPPING_BG.getColor());
       if(depth)
-      LevelRenderer.addLabel(++i, element.depth(), element.x(), element.y(), element.z(), Configs.STEPPING_TEXT.getColor(), Configs.STEPPING_DEPTH.getColor());
+        LevelRenderer.addLabel(++i, element.depth(), element.x(), element.y(), element.z(), Configs.STEPPING_TEXT.getColor(), Configs.STEPPING_DEPTH.getColor());
       else
         LevelRenderer.addText(String.valueOf(++i), element.x(), element.y(), element.z(), Configs.STEPPING_TEXT.getColor());
 
       if(blockEntity)
         ClientBlockEntityQueue.addPos(element);
     }
-    while(i < queue.size())
+    while(i < queue.size() - newQueueElementCount)
     {
       QueueElement element = iter.next();
       LevelRenderer.addCuboidFaces(element.x(), element.y(), element.z(), Configs.TO_STEP_BG.getColor());
       if(depth)
-      LevelRenderer.addLabel(++i, element.depth(), element.x(), element.y(), element.z(), Configs.TO_STEP_TEXT.getColor(), Configs.TO_STEP_DEPTH.getColor());
+        LevelRenderer.addLabel(++i, element.depth(), element.x(), element.y(), element.z(), Configs.TO_STEP_TEXT.getColor(), Configs.TO_STEP_DEPTH.getColor());
       else
         LevelRenderer.addText(String.valueOf(++i), element.x(), element.y(), element.z(), Configs.TO_STEP_TEXT.getColor());
+    }
+    while(i < queue.size())
+    {
+      QueueElement element = iter.next();
+      LevelRenderer.addCuboidFaces(element.x(), element.y(), element.z(), Configs.NEW_BG.getColor());
+      if(depth)
+        LevelRenderer.addLabel(++i, element.depth(), element.x(), element.y(), element.z(), Configs.NEW_TEXT.getColor(), Configs.NEW_DEPTH.getColor());
+      else
+        LevelRenderer.addText(String.valueOf(++i), element.x(), element.y(), element.z(), Configs.NEW_TEXT.getColor());
     }
   }
 

@@ -30,6 +30,9 @@ public class Configs implements IConfigHandler
     TO_STEP_BG = new ConfigColor("toStepBG", "#80000000", "Background color for things not stepped through"),
     TO_STEP_TEXT = new ConfigColor("toStepText", "#FFFFFFFF", "Text color for things not stepped through"),
     TO_STEP_DEPTH = new ConfigColor("toStepDepth", "#FF00FFFF", "Text color for depth of things not stepped through"),
+    NEW_BG = new ConfigColor("newBG", "#80808080", "Background color for newly scheduled things"),
+    NEW_TEXT = new ConfigColor("newText", "#FFFFFFFF", "Text color for newly scheduled things"),
+    NEW_DEPTH = new ConfigColor("newDepth", "#FF00FFFF", "Text color for depth of newly scheduled things"),
     SEPARATOR = new ConfigColor("separator", "#80FFFFFF", "Color for separating elements in the HUD"),
     POSITION = new ConfigColor("position", "#80FF0000", "Color for indicating the position in the HUD");
   public static final ConfigOptionList HUD_ALIGNMENT = new ConfigOptionList("hudAlignment", Align.TOP, "Alignment for the HUD");

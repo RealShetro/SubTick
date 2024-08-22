@@ -19,7 +19,7 @@ import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static com.mojang.brigadier.arguments.StringArgumentType.word;
 
-import subtick.Queues;
+import subtick.IQueues;
 import subtick.Settings;
 import subtick.queues.TickingQueue;
 
@@ -78,7 +78,7 @@ public class QueueCommand
 
   private static int step(CommandSourceStack c, String commandKey, String modeKey, int count, int range, boolean force) throws CommandSyntaxException
   {
-    Queues.schedule(c, TickingQueue.byCommandKey(commandKey), modeKey, count,
+    IQueues.get(c).schedule(c, TickingQueue.byCommandKey(commandKey), modeKey, count,
     //#if MC >= 11904
     //$$ BlockPos.containing(c.getPosition()),
     //#else

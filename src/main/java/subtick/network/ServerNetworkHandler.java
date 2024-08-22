@@ -10,7 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -191,7 +190,7 @@ public class ServerNetworkHandler
     sendNbt(level, tag);
   }
 
-  public static void sendQueueStep(ObjectLinkedOpenHashSet<QueueElement> queue, int steps, ServerLevel level, CommandSourceStack actor)
+  public static void sendQueueStep(ObjectLinkedOpenHashSet<QueueElement> queue, ObjectLinkedOpenHashSet<QueueElement> spentQueue, int newQueueElementsCount, int steps, ServerLevel level, CommandSourceStack actor)
   {
     if(CarpetSettings.superSecretSetting || queue.isEmpty())
       return;
@@ -199,6 +198,16 @@ public class ServerNetworkHandler
     CompoundTag tag = new CompoundTag();
     CompoundTag queueTag = new CompoundTag();
     ListTag list = new ListTag();
+    for(QueueElement element : spentQueue)
+    {
+      CompoundTag elementTag = new CompoundTag();
+      elementTag.putString("s", element.label());
+      elementTag.putInt("x", element.x());
+      elementTag.putInt("y", element.y());
+      elementTag.putInt("z", element.z());
+      elementTag.putInt("d", element.depth());
+      list.add(elementTag);
+    }
     for(QueueElement element : queue)
     {
       CompoundTag elementTag = new CompoundTag();
@@ -211,17 +220,28 @@ public class ServerNetworkHandler
     }
     queueTag.put("queue", list);
     queueTag.putInt("steps", steps);
+    queueTag.putInt("newElements", newQueueElementsCount);
     tag.put("QueueStep", queueTag);
     sendNbt(level, tag, actor);
   }
 
-  public static void sendQueue(ObjectLinkedOpenHashSet<QueueElement> queue, ServerLevel level)
+  public static void sendQueue(ObjectLinkedOpenHashSet<QueueElement> queue, ObjectLinkedOpenHashSet<QueueElement> spentQueue, ServerLevel level)
   {
     if(CarpetSettings.superSecretSetting || queue.isEmpty())
       return;
 
     CompoundTag tag = new CompoundTag();
     ListTag list = new ListTag();
+    for(QueueElement element : spentQueue)
+    {
+      CompoundTag elementTag = new CompoundTag();
+      elementTag.putString("s", element.label());
+      elementTag.putInt("x", element.x());
+      elementTag.putInt("y", element.y());
+      elementTag.putInt("z", element.z());
+      elementTag.putInt("d", element.depth());
+      list.add(elementTag);
+    }
     for(QueueElement element : queue)
     {
       CompoundTag elementTag = new CompoundTag();

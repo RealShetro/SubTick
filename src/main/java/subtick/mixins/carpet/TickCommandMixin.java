@@ -10,6 +10,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import carpet.commands.TickCommand;
 import net.minecraft.commands.CommandSourceStack;
+import subtick.ITickHandler;
 import subtick.Settings;
 import subtick.TickPhase;
 
@@ -25,27 +26,27 @@ public class TickCommandMixin
   @Inject(method = "freezeStatus", at = @At("HEAD"), cancellable = true, remap = false)
   private static void freezeStatus(CommandSourceStack c, CallbackInfoReturnable<Integer> cir)
   {
-    cir.setReturnValue(subtick.commands.TickCommand.when(c));
+    cir.setReturnValue(ITickHandler.get(c).when(c));
   }
 
   @Inject(method = "setFreeze", at = @At("HEAD"), cancellable = true, remap = false)
   private static void setFreeze(CommandSourceStack c, boolean isDeep, boolean freeze, CallbackInfoReturnable<Integer> cir) throws CommandSyntaxException
   {
     if(freeze)
-      cir.setReturnValue(subtick.commands.TickCommand.freeze(c, TickPhase.byCommandKey(Settings.subtickDefaultPhase)));
+      cir.setReturnValue(ITickHandler.get(c).freeze(c, TickPhase.byCommandKey(Settings.subtickDefaultPhase)));
     else
-      cir.setReturnValue(subtick.commands.TickCommand.unfreeze(c));
+      cir.setReturnValue(ITickHandler.get(c).unfreeze(c));
   }
 
   @Inject(method = "toggleFreeze", at = @At("HEAD"), cancellable = true, remap = false)
   private static void toggleFreeze(CommandSourceStack c, boolean isDeep, CallbackInfoReturnable<Integer> cir) throws CommandSyntaxException
   {
-    cir.setReturnValue(subtick.commands.TickCommand.toggleFreeze(c, TickPhase.byCommandKey(Settings.subtickDefaultPhase)));
+    cir.setReturnValue(ITickHandler.get(c).toggleFreeze(c, TickPhase.byCommandKey(Settings.subtickDefaultPhase)));
   }
 
   @Inject(method = "step", at = @At("HEAD"), cancellable = true, remap = false)
   private static void step(CommandSourceStack c, int ticks, CallbackInfoReturnable<Integer> cir) throws CommandSyntaxException
   {
-    cir.setReturnValue(subtick.commands.TickCommand.step(c, ticks, TickPhase.byCommandKey(Settings.subtickDefaultPhase)));
+    cir.setReturnValue(ITickHandler.get(c).step(c, ticks, TickPhase.byCommandKey(Settings.subtickDefaultPhase)));
   }
 }

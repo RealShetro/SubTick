@@ -1,6 +1,5 @@
 package subtick.commands;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
 
@@ -13,9 +12,8 @@ import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static com.mojang.brigadier.arguments.StringArgumentType.word;
 
-import subtick.TickHandler;
+import subtick.ITickHandler;
 import subtick.TickPhase;
-import subtick.util.Translations;
 
 public class TickCommand
 {
@@ -23,19 +21,22 @@ public class TickCommand
   {
     dispatcher.register(
       literal("tick")
+      //.then(literal("debug")
+      //  .executes((c) -> ITickHandler.get(c).printDebugInfo(c.getSource()))
+      //)
       .then(literal("when")
-        .executes((c) -> when(c.getSource()))
+        .executes((c) -> ITickHandler.get(c).when(c.getSource()))
       )
       .then(literal("freeze")
         .then(argument("phase", word())
           .suggests((c, b) -> suggest(TickPhase.commandSuggestions, b))
-          .executes((c) -> toggleFreeze(c.getSource(), TickPhase.byCommandKey(getString(c, "phase"))))
+          .executes((c) -> ITickHandler.get(c).toggleFreeze(c.getSource(), TickPhase.byCommandKey(getString(c, "phase"))))
         )
         // Carpet parity
         .then(literal("on")
           .then(argument("phase", word())
             .suggests((c, b) -> suggest(TickPhase.commandSuggestions, b))
-            .executes((c) -> freeze(c.getSource(), TickPhase.byCommandKey(getString(c, "phase"))))
+            .executes((c) -> ITickHandler.get(c).freeze(c.getSource(), TickPhase.byCommandKey(getString(c, "phase"))))
           )
           // .executes((c) -> freeze(c.getSource(), TickPhase.byCommandKey(Settings.subtickDefaultPhase)))
         )
@@ -53,73 +54,12 @@ public class TickCommand
         .then(argument("ticks", integer(0))
           .then(argument("phase", word())
             .suggests((c, b) -> suggest(TickPhase.commandSuggestions, b))
-            .executes((c) -> step(c.getSource(), getInteger(c, "ticks"), TickPhase.byCommandKey(getString(c, "phase"))))
+            .executes((c) -> ITickHandler.get(c).step(c.getSource(), getInteger(c, "ticks"), TickPhase.byCommandKey(getString(c, "phase"))))
           )
           // .executes((c) -> step(c.getSource(), getInteger(c, "ticks"), TickPhase.byCommandKey(Settings.subtickDefaultPhase)))
         )
         // .executes((c) -> step(c.getSource(), 1, TickPhase.byCommandKey(Settings.subtickDefaultPhase)))
       )
     );
-  }
-
-  public static int when(CommandSourceStack c)
-  {
-    if(TickHandler.frozen())
-      Translations.m(c, "tickCommand.when.frozen", TickHandler.currentPhase());
-    else
-      Translations.m(c, "tickCommand.when.unfrozen", TickHandler.currentPhase());
-    return Command.SINGLE_SUCCESS;
-  }
-
-  public static int freeze(CommandSourceStack c, int phase)
-  {
-    if(TickHandler.frozen() || TickHandler.freezing())
-    {
-      Translations.m(c, "tickCommand.freeze.err");
-      return 0;
-    }
-    else
-    {
-      TickPhase tickPhase = new TickPhase(c.getLevel(), phase);
-      TickHandler.scheduleFreeze(c.getLevel(), tickPhase);
-      Translations.m(c, "tickCommand.freeze.success", tickPhase);
-      return Command.SINGLE_SUCCESS;
-    }
-  }
-
-  public static int unfreeze(CommandSourceStack c)
-  {
-    if(TickHandler.frozen() || TickHandler.freezing())
-    {
-      TickHandler.scheduleUnfreeze(c.getLevel());
-      Translations.m(c, "tickCommand.unfreeze.success");
-      return Command.SINGLE_SUCCESS;
-    }
-    else
-    {
-      Translations.m(c, "tickCommand.unfreeze.err");
-      return 0;
-    }
-  }
-
-  public static int toggleFreeze(CommandSourceStack c, int phase)
-  {
-    if(TickHandler.frozen() || TickHandler.freezing())
-      return unfreeze(c);
-    else
-      return freeze(c, phase);
-  }
-
-  public static int step(CommandSourceStack c, int ticks, int phase)
-  {
-    TickPhase tickPhase = new TickPhase(c.getLevel(), phase);
-    if(!TickHandler.canStep(c, ticks, tickPhase)) return 0;
-
-    if(ticks == 1)
-      Translations.m(c, "tickCommand.step.success.single", tickPhase, 1);
-    else
-      Translations.m(c, "tickCommand.step.success.multiple", tickPhase, ticks);
-    TickHandler.scheduleStep(c, ticks, tickPhase);
-    return Command.SINGLE_SUCCESS;
   }
 }

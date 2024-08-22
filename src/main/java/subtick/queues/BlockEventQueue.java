@@ -31,8 +31,11 @@ public class BlockEventQueue extends TickingQueue
 
   public void updateQueue(ServerLevel level, BlockEventData be)
   {
-    queue.add(new QueueElement(be, depth));
-    ServerNetworkHandler.sendQueue(queue, level);
+    if(queue.add(new QueueElement(be, depth)))
+    {
+      newQueueElementsCount ++;
+      ServerNetworkHandler.sendQueue(queue, spentQueue, level);
+    }
     exhausted = false;
   }
 
@@ -44,6 +47,7 @@ public class BlockEventQueue extends TickingQueue
     //$$ level.blockEventsToReschedule.clear();
     //#endif
     queue.clear();
+    spentQueue.clear();
     for(BlockEventData be : level.blockEvents)
       queue.add(new QueueElement(be, 0));
     depth = 0;
@@ -68,6 +72,9 @@ public class BlockEventQueue extends TickingQueue
       for(int i = 0; i < size; i ++)
       {
         BlockEventData blockEvent = level.blockEvents.removeFirst();
+        // Removing the first queue element is important to allow multiple block events in the same block (at different depth).
+        if(!queue.isEmpty())
+          spentQueue.add(queue.removeFirst());
         //#if MC >= 11800
         //$$ if(level.shouldTickBlocksAt(ChunkPos.asLong(blockEvent.pos())))
         //$$ {

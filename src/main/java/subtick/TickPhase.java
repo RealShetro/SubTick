@@ -48,6 +48,11 @@ public record TickPhase(int dim, int phase)
   private static final int lastPhase = 10;
   public static final int totalPhases = 11;
 
+  public static void reset()
+  {
+    dims.clear();
+  }
+
   public static List<String> getDimensions()
   {
     return dims;

@@ -4,6 +4,7 @@ import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 
+import carpet.utils.Messenger;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -16,25 +17,39 @@ import subtick.queues.BlockEventQueue;
 import subtick.queues.TickingQueue;
 import subtick.util.Translations;
 
-public class Queues
+public class Queues implements IQueues
 {
   public static final DynamicCommandExceptionType INVALID_QUEUE_EXCEPTION = new DynamicCommandExceptionType(key -> new LiteralMessage("Invalid queue '" + key + "'"));
-  // private final TickHandler handler;
-  // private final ServerLevel level;
 
-  private static TickingQueue queue;
-  private static TickingQueue prev_queue;
-  private static int count;
-  private static BlockPos pos;
-  private static int range;
-  private static CommandSourceStack actor;
-  private static ServerLevel level;
+  private final TickHandler tickHandler;
 
-  public static boolean scheduled;
-  private static boolean stepping;
-  private static boolean should_end;
+  public Queues(TickHandler tickHandler)
+  {
+    this.tickHandler = tickHandler;
+  }
 
-  private static void step(TickingQueue newQueue, CommandSourceStack c, int newCount, BlockPos newPos, int newRange) throws CommandSyntaxException
+  private TickingQueue queue;
+  private TickingQueue prev_queue;
+  private int count;
+  private BlockPos pos;
+  private int range;
+  private CommandSourceStack actor;
+  private ServerLevel level;
+
+  public boolean scheduled;
+  private boolean stepping;
+  private boolean should_end;
+
+  public void printDebugInfo(CommandSourceStack c)
+  {
+    Messenger.m(c, "w queue: " + queue);
+    Messenger.m(c, "w prev_queue: " + prev_queue);
+    Messenger.m(c, "w count: " + count);
+    Messenger.m(c, "w pos: " + pos);
+    Messenger.m(c, "w range: " + range);
+  }
+
+  private void step(TickingQueue newQueue, CommandSourceStack c, int newCount, BlockPos newPos, int newRange) throws CommandSyntaxException
   {
     queue = newQueue;
     actor = c;
@@ -44,30 +59,33 @@ public class Queues
     scheduled = true;
   }
 
-  public static void schedule(CommandSourceStack c, TickingQueue newQueue, String modeKey, int count, BlockPos pos, int range, boolean force) throws CommandSyntaxException
+  @Override
+  public void schedule(CommandSourceStack c, TickingQueue newQueue, String modeKey, int count, BlockPos pos, int range, boolean force) throws CommandSyntaxException
   {
     level = c.getLevel();
     newQueue.setMode(modeKey);
     TickPhase phase = new TickPhase(level, newQueue.getPhase());
 
-    if(force ? TickHandler.canStep(0, phase) : TickHandler.canStep(c, 0, phase))
+    if(force ? tickHandler.canStep(0, phase) : tickHandler.canStep(c, 0, phase))
     {
       step(newQueue, c, count, pos, range);
-      TickHandler.scheduleStep(c, 0, phase);
+      tickHandler.step(c, 0, phase);
     }
-    else if(force && TickHandler.canStep(c, 1, phase))
+    else if(force && tickHandler.canStep(c, 1, phase))
     {
       step(newQueue, c, count, pos, range);
-      TickHandler.scheduleStep(c, 1, phase);
+      tickHandler.step(c, 1, phase);
     }
   }
 
-  public static void scheduleEnd()
+  @Override
+  public void scheduleEnd()
   {
     should_end = true;
   }
 
-  public static void execute()
+  @Override
+  public void execute()
   {
     if(!scheduled) return;
 
@@ -81,7 +99,7 @@ public class Queues
     try
     {
       Triple<Integer, Integer, Boolean> triple = queue.step(count, pos, range);
-      queue.sendQueues(actor, triple.getLeft());
+      queue.sendQueueStep(actor, triple.getLeft());
       sendFeedback(triple.getMiddle(), triple.getRight());
     }
     catch(Exception e)
@@ -93,7 +111,8 @@ public class Queues
     scheduled = false;
   }
 
-  public static void end()
+  @Override
+  public void end()
   {
     if(!should_end)
       return;
@@ -105,13 +124,20 @@ public class Queues
     prev_queue.step(1, BlockPos.ZERO, -2);
     prev_queue.end();
     prev_queue.exhausted = false;
-    TickHandler.advancePhase(level);
-    // this clear block event highlights
-    ServerNetworkHandler.sendTickStep(level, 0, TickHandler.targetPhase());
+    tickHandler.advancePhase(level);
+    // this clears block event highlights
+    ServerNetworkHandler.sendTickStep(level, 0, tickHandler.targetPhase());
     stepping = false;
   }
 
-  private static void sendFeedback(int steps, boolean exhausted)
+  @Override
+  public void onScheduleBlockEvent(ServerLevel level, BlockEventData be)
+  {
+    if(stepping && queue instanceof BlockEventQueue beq)
+      beq.updateQueue(level, be);
+  }
+
+  private void sendFeedback(int steps, boolean exhausted)
   {
     if(steps == 0)
       Translations.m(actor, "queueCommand.err.exhausted", queue);
@@ -125,11 +151,5 @@ public class Queues
         Translations.m(actor, "queueCommand.success.multiple.exhausted", queue, steps);
       else
         Translations.m(actor, "queueCommand.success.multiple", queue, steps);
-  }
-
-  public static void onScheduleBlockEvent(ServerLevel level, BlockEventData be)
-  {
-    if(stepping && queue instanceof BlockEventQueue beq)
-      beq.updateQueue(level, be);
   }
 }
