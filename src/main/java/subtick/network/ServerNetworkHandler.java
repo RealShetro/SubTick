@@ -192,7 +192,7 @@ public class ServerNetworkHandler
 
   public static void sendQueueStep(ObjectLinkedOpenHashSet<QueueElement> queue, ObjectLinkedOpenHashSet<QueueElement> spentQueue, int newQueueElementsCount, int steps, ServerLevel level, CommandSourceStack actor)
   {
-    if(CarpetSettings.superSecretSetting || queue.isEmpty())
+    if(CarpetSettings.superSecretSetting || (queue.isEmpty() && spentQueue.isEmpty()))
       return;
 
     CompoundTag tag = new CompoundTag();

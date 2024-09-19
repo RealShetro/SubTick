@@ -44,6 +44,7 @@ public class MinecraftServerMixin implements ITickHandleable
     MappedRegistry<?> mappedRegistry, ChunkGenerator chunkGenerator, LevelStem levelStem, DimensionType dimensionType, ServerLevel serverLevel)
   {
     tickHandler = new TickHandler();
+    TickPhase.reset();
     TickPhase.addDimension(serverLevel);
   }
 

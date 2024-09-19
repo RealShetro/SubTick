@@ -42,6 +42,7 @@ public class MinecraftServerMixin implements ITickHandleable
     Registry<?> registry, WorldOptions worldOptions, long l, long m, List<?> list, LevelStem levelStem, ServerLevel serverLevel)
   {
     tickHandler = new TickHandler();
+    TickPhase.reset();
     TickPhase.addDimension(serverLevel);
   }
 
