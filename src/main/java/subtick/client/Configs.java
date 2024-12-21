@@ -19,7 +19,9 @@ import subtick.client.HudRenderer.Align;
 
 public class Configs implements IConfigHandler
 {
-  public static final ConfigBoolean SHOW_HUD = new ConfigBoolean("showHUD", true, "Controls whether the hud is shown");
+  public static final ConfigBoolean
+    SHOW_HUD = new ConfigBoolean("showHUD", true, "Controls whether the hud is shown"),
+    HIGHLIGHT_ONLY_STEPPING_BLOCKS = new ConfigBoolean("highlightOnlySteppingBlocks", false, "Leaves only the stepping highlight");
   public static final ConfigColor
     STEPPED_BG = new ConfigColor("steppedBG", "#80000000", "Background color for things already stepped through"),
     STEPPED_TEXT = new ConfigColor("steppedText", "#FFAAAAAA", "Text color for things already stepped through"),
@@ -44,6 +46,7 @@ public class Configs implements IConfigHandler
 
   public static final ImmutableList<IConfigBase> OPTIONS = ImmutableList.of(
     SHOW_HUD,
+    HIGHLIGHT_ONLY_STEPPING_BLOCKS,
     STEPPED_BG,
     STEPPED_TEXT,
     STEPPED_DEPTH,

@@ -115,6 +115,10 @@ public class ClientTickHandler
     while(i < index1)
     {
       QueueElement element = iter.next();
+      if (Configs.HIGHLIGHT_ONLY_STEPPING_BLOCKS.getBooleanValue()) {
+          i = index1;
+          break;
+      }
       LevelRenderer.addCuboidFaces(element.x(), element.y(), element.z(), Configs.STEPPED_BG.getColor());
       if(depth)
         LevelRenderer.addLabel(++i, element.depth(), element.x(), element.y(), element.z(), Configs.STEPPED_TEXT.getColor(), Configs.STEPPED_DEPTH.getColor());
@@ -133,6 +137,7 @@ public class ClientTickHandler
       if(blockEntity)
         ClientBlockEntityQueue.addPos(element);
     }
+    if (Configs.HIGHLIGHT_ONLY_STEPPING_BLOCKS.getBooleanValue()) return;
     while(i < queue.size() - newQueueElementCount)
     {
       QueueElement element = iter.next();
