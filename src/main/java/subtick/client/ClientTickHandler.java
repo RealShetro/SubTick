@@ -116,8 +116,8 @@ public class ClientTickHandler
     {
       QueueElement element = iter.next();
       if (Configs.HIGHLIGHT_ONLY_STEPPING_BLOCKS.getBooleanValue()) {
-          i = index1;
-          break;
+          ++i;
+          continue;
       }
       LevelRenderer.addCuboidFaces(element.x(), element.y(), element.z(), Configs.STEPPED_BG.getColor());
       if(depth)

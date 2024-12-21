@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import fi.dy.masa.malilib.config.ConfigUtils;
 import fi.dy.masa.malilib.config.IConfigBase;
 import fi.dy.masa.malilib.config.IConfigHandler;
+import fi.dy.masa.malilib.config.options.ConfigHotkey;
 import fi.dy.masa.malilib.config.options.ConfigBoolean;
 import fi.dy.masa.malilib.config.options.ConfigColor;
 import fi.dy.masa.malilib.config.options.ConfigInteger;
@@ -19,6 +20,7 @@ import subtick.client.HudRenderer.Align;
 
 public class Configs implements IConfigHandler
 {
+  public static final ConfigHotkey OPEN_GUI_CONFIGS = new ConfigHotkey("openGuiConfigs", "RIGHT_ALT", "Open the Config GUI");
   public static final ConfigBoolean
     SHOW_HUD = new ConfigBoolean("showHUD", true, "Controls whether the hud is shown"),
     HIGHLIGHT_ONLY_STEPPING_BLOCKS = new ConfigBoolean("highlightOnlySteppingBlocks", false, "Leaves only the stepping highlight");
@@ -45,6 +47,7 @@ public class Configs implements IConfigHandler
     MAX_HIGHLIGHT_SIZE = new ConfigInteger("maxHighlightSize", 10, "Maximum number of highlighted elements in the queue HUD\nUseful to control the number of highlights when the queue is bigger than maxQueueSize");
 
   public static final ImmutableList<IConfigBase> OPTIONS = ImmutableList.of(
+    OPEN_GUI_CONFIGS,
     SHOW_HUD,
     HIGHLIGHT_ONLY_STEPPING_BLOCKS,
     STEPPED_BG,
