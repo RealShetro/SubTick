@@ -68,5 +68,6 @@
   "subtick.client.align.right": "Right",
   "subtick.client.align.bottom_left": "Bottom Left",
   "subtick.client.align.bottom": "Bottom",
-  "subtick.client.align.bottom_right": "Bottom Right"
+  "subtick.client.align.bottom_right": "Bottom Right",
+  "subtick.client.gui.title.configs": "Subtick Configs"
 }

@@ -9,7 +9,7 @@ public class GuiConfigs extends GuiConfigsBase
 {
   public GuiConfigs()
   {
-    super(10, 50, SubTick.MOD_ID, null, "subtick.gui.title.configs");
+    super(10, 50, SubTick.MOD_ID, null, "subtick.client.gui.title.configs");
   }
 
   @Override
