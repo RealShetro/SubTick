@@ -11,7 +11,8 @@
     "carpet.ServerNetworkHandlerMixin",
     "carpet.TickCommandMixin",
 
-    "lithium.LithiumServerTickSchedulerAccessor"
+    "lithium.LithiumServerTickSchedulerAccessor",
+    "lithium.RebindableTickingBlockEntityWrapper_CrashFix"
   ],
   "client": [
     "client.ClientNetworkHandlerMixin",
